@@ -1,0 +1,139 @@
+<UserControl
+    x:Class="Arm64NativeAotDemo.Views.MainView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:CompileBindings="True">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.eyebrow">
+      <Setter Property="Foreground" Value="#7DD3FC" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="LetterSpacing" Value="1.2" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Foreground" Value="#8DA2BC" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.value">
+      <Setter Property="Foreground" Value="#F8FAFC" />
+      <Setter Property="FontSize" Value="21" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Border.metric">
+      <Setter Property="Background" Value="#111F32" />
+      <Setter Property="BorderBrush" Value="#263A52" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="20" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid Background="#07111F" RowDefinitions="Auto,*,Auto">
+    <Border
+        Grid.Row="0"
+        Margin="36,30,36,0"
+        Padding="0,0,0,22"
+        BorderBrush="#1E334A"
+        BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="7">
+          <TextBlock Classes="eyebrow" Text="RASPBERRY PI BUILD LAB" />
+          <TextBlock
+              FontSize="34"
+              FontWeight="Bold"
+              Foreground="#F8FAFC"
+              Text="Avalonia on native ARM64" />
+          <TextBlock
+              FontSize="15"
+              Foreground="#9FB0C5"
+              Text="A small GUI compiled ahead of time and executed without the .NET runtime." />
+        </StackPanel>
+
+        <Border
+            x:Name="StatusBadge"
+            Grid.Column="1"
+            VerticalAlignment="Top"
+            Padding="14,9"
+            Background="#123C32"
+            BorderBrush="#1F8A70"
+            BorderThickness="1"
+            CornerRadius="20">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Ellipse Width="8" Height="8" Fill="#5EE6A8" />
+            <TextBlock
+                x:Name="StatusText"
+                VerticalAlignment="Center"
+                Foreground="#B6F7D8"
+                FontSize="12"
+                FontWeight="Bold"
+                Text="CHECKING BUILD" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="36,26" ColumnDefinitions="*,*,*" ColumnSpacing="16">
+      <Border Grid.Column="0" Classes="metric">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="label" Text="PROCESS ARCHITECTURE" />
+          <TextBlock x:Name="ArchitectureText" Classes="value" Text="UNKNOWN" />
+          <TextBlock
+              Foreground="#7890AA"
+              FontSize="12"
+              TextWrapping="Wrap"
+              Text="Must report ARM64 on the build host and Raspberry Pi." />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="1" Classes="metric">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="label" Text="RUNTIME MODE" />
+          <TextBlock x:Name="RuntimeModeText" Classes="value" Text="UNKNOWN" />
+          <TextBlock
+              Foreground="#7890AA"
+              FontSize="12"
+              TextWrapping="Wrap"
+              Text="NativeAOT disables runtime code generation and JIT compilation." />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="2" Classes="metric">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="label" Text="RUNTIME IDENTIFIER" />
+          <TextBlock x:Name="RuntimeIdentifierText" Classes="value" Text="UNKNOWN" />
+          <TextBlock
+              Foreground="#7890AA"
+              FontSize="12"
+              TextWrapping="Wrap"
+              Text="linux-arm64 is the target used by 64-bit Raspberry Pi OS." />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Border
+        Grid.Row="2"
+        Margin="36,0,36,30"
+        Padding="18,14"
+        Background="#0C1929"
+        BorderBrush="#1D3045"
+        BorderThickness="1"
+        CornerRadius="12">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+        <PathIcon Width="18" Height="18" Foreground="#7DD3FC" Data="M12,2A10,10 0 1,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z" />
+        <TextBlock
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Foreground="#AFC1D5"
+            FontSize="13"
+            Text="Cloud validation uses Xvfb. On Raspberry Pi, pass --drm for direct KMS output." />
+        <TextBlock
+            x:Name="FrameworkText"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Foreground="#6F88A4"
+            FontSize="12"
+            Text=".NET" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
