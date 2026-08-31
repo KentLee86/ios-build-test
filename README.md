@@ -3,6 +3,8 @@
 React Native 앱을 GitHub Actions의 macOS 러너에서 빌드하고, iOS Simulator에
 설치·실행한 뒤 화면을 캡처하는 최소 검증 프로젝트입니다.
 
+공개 저장소: [kentlee86/ios-build-test](https://github.com/kentlee86/ios-build-test)
+
 ## 로컬 검증
 
 ```sh
@@ -34,3 +36,8 @@ workflow 중 하나에서 수행하며 동일한 증거를 artifact로 남깁니
 Namespace workflow는 `namespace-profile-ios-macos`를 사용하며 GitHub Actions의
 `workflow_dispatch`로만 실행됩니다. CI는 서명 없는 Simulator 빌드이므로 Apple
 Developer 인증서는 필요하지 않습니다.
+
+## 사용 설명서
+
+- [WarpBuild iOS CI 빌드 및 화면 캡처 사용 설명서](docs/warpbuild-ios-ci-guide.typ)
+- [렌더링된 PDF](output/pdf/warpbuild-ios-ci-user-guide.pdf)
