@@ -1,0 +1,110 @@
+name: iOS WarpBuild
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-run-screenshot:
+    name: Build, run, and capture iOS
+    runs-on: warp-macos-15-arm64-6x
+    timeout-minutes: 30
+
+    env:
+      APP_BUNDLE_ID: com.kentlee.iosbuildtest
+      DERIVED_DATA: build/DerivedData
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Run JavaScript checks
+        run: |
+          npx jest --runInBand
+          npm run lint
+
+      - name: Set up Ruby and CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install iOS pods
+        run: bundle exec pod install --project-directory=ios
+
+      - name: Record build environment
+        run: |
+          mkdir -p artifacts
+          {
+            xcodebuild -version
+            node --version
+            ruby --version
+            bundle exec pod --version
+          } | tee artifacts/build-metadata.txt
+
+      - name: Build unsigned Release app for Simulator
+        run: |
+          xcodebuild \
+            -workspace ios/IosBuildTest.xcworkspace \
+            -scheme IosBuildTest \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Select and boot an iPhone Simulator
+        shell: bash
+        run: |
+          SIMULATOR_UDID="$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(device["udid"] for devices in data["devices"].values() for device in devices if device["name"].startswith("iPhone") and device.get("isAvailable", True)))')"
+          SIMULATOR_NAME="$(xcrun simctl list devices available -j | SIMULATOR_UDID="$SIMULATOR_UDID" python3 -c 'import json,os,sys; data=json.load(sys.stdin); udid=os.environ["SIMULATOR_UDID"]; print(next(device["name"] for devices in data["devices"].values() for device in devices if device["udid"] == udid))')"
+          echo "SIMULATOR_UDID=$SIMULATOR_UDID" >> "$GITHUB_ENV"
+          echo "Simulator: $SIMULATOR_NAME ($SIMULATOR_UDID)" | tee -a artifacts/build-metadata.txt
+          xcrun simctl boot "$SIMULATOR_UDID"
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b
+
+      - name: Install, launch, and capture the app
+        shell: bash
+        run: |
+          APP_PATH="$DERIVED_DATA/Build/Products/Release-iphonesimulator/IosBuildTest.app"
+          test -d "$APP_PATH"
+          xcrun simctl install "$SIMULATOR_UDID" "$APP_PATH"
+          xcrun simctl launch "$SIMULATOR_UDID" "$APP_BUNDLE_ID"
+          sleep 10
+          xcrun simctl io "$SIMULATOR_UDID" screenshot artifacts/ios-simulator.png
+          test -s artifacts/ios-simulator.png
+
+      - name: Collect Simulator logs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          if [[ -n "${SIMULATOR_UDID:-}" ]]; then
+            xcrun simctl spawn "$SIMULATOR_UDID" log show \
+              --style compact --last 3m \
+              --predicate 'process == "IosBuildTest"' \
+              > artifacts/simulator.log 2>&1 || true
+          fi
+
+      - name: Upload iOS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-warpbuild-evidence
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
